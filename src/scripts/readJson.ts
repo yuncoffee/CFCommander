@@ -1,8 +1,6 @@
 import * as fs from "fs"
 import * as path from "path"
 import chalk from "chalk"
-
-import { exist } from "../utils/fs"
 import {
     AliasVariable,
     CFCollection,
@@ -12,7 +10,10 @@ import {
     Variable,
     VariableType,
 } from "../types"
-import { SWIFT_ENUM_TEMPLATE } from "../template/swiftStructTemplate"
+import {
+    SWIFT_ENUM_TEMPLATE,
+    SWIFT_FILE_TEMPALTE,
+} from "../template/swiftStructTemplate"
 import { VariableManager } from "../models/foundationModel"
 
 export const readVariableJson = (filePath = "./sample.json") => {
@@ -45,7 +46,6 @@ export const checkCollectionType = (type: VariableType) => {
         default:
             break
     }
-
     return result
 }
 
@@ -75,6 +75,8 @@ export const convertToVariableManager = () => {
         }
     })
 
+    makeLayoutVariableContent(FOUNDATIONS.layout)
+
     // console.log(FOUNDATIONS)
 
     // const isAliasList = FoundationSpace![1].modes
@@ -98,6 +100,73 @@ export const convertToVariableManager = () => {
     // console.log(myTemplate)
 }
 
+function makeLayoutVariableContent(variables: VariableManager[]) {
+    let content = ""
+    variables
+        .flatMap((v) => {
+            return {
+                name: v.name,
+                variables: v.modes.map((v) => v.variables)[0],
+            }
+        })
+        .forEach((variable) => {
+            content += `${SWIFT_ENUM_TEMPLATE(
+                variable.name,
+                variable.variables
+            )}\n`
+        })
+    createSwiftFile("Foundation/Layout", content)
+}
+
+const createSwiftFile = (dirPath: string, content: string) => {
+    createDirectory(dirPath)
+    const _dirPath = `./${dirPath}`
+
+    const file = {
+        name: path.join(`${_dirPath}`, `layout.swift`),
+        content: SWIFT_FILE_TEMPALTE(content),
+    }
+
+    if (exist(file.name)) {
+        chalk.bold.hex(`#646464`)("이미 해당 파일이 존재합니다")
+    } else {
+        fs.writeFileSync(file.name, file.content)
+        console.log(chalk.bold.hex(`#424242`)("파일 생성 완료."))
+    }
+}
+
+const createDirectory = (dirPath: string) => {
+    const dirName = path
+        .relative(".", path.normalize(dirPath))
+        .split(path.sep)
+        .filter((p) => !!p)
+
+    dirName.forEach((_, idx) => {
+        const pathBuilder = dirName.slice(0, idx + 1).join(path.sep)
+
+        if (!exist(pathBuilder)) {
+            fs.mkdirSync(`${pathBuilder}`)
+            console.log(chalk.bold.hex(`#424242`)("폴더 생성 완료."))
+        } else {
+            console.error(
+                chalk.bold.hex(`#646464`)("이미 동일한 폴더명이 존재합니다.")
+            )
+        }
+    })
+}
+
+const exist = (dir: fs.PathLike) => {
+    try {
+        fs.accessSync(
+            dir,
+            fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK
+        )
+        return true
+    } catch (e) {
+        return false
+    }
+}
+
 // const pathName: fs.PathLike = "./foundation"
 
 // const dirname = path
@@ -117,20 +186,6 @@ export const convertToVariableManager = () => {
 //                 "이미 동일한 폴더명이 존재합니다."
 //             )
 //         )
-//     }
-// })
-
-// const makeDir = (date: string, count: number) => {
-//     const postDirName = `./blog/${date.split("T")[0]}-${count}장/img`
-
-// dirname.forEach((d, idx) => {
-//     const pathBuilder = dirname.slice(0, idx + 1).join(path.sep)
-
-//     if (!exist(pathBuilder)) {
-//         fs.mkdirSync(`${pathBuilder}`)
-//         console.log(chalk.bold.hex(`${COLOR_SUCCESS}`)("폴더 생성 완료."))
-//     } else {
-
 //     }
 // })
 // }
