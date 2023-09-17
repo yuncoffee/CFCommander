@@ -1,5 +1,8 @@
 import { Variable } from "../types"
 
+/**
+ * Swift File 생성을 위한 템플릿
+ */
 export const SWIFT_FILE_TEMPALTE = (content: string) => {
     return `
 //

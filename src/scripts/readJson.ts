@@ -13,8 +13,8 @@ import {
 import {
     SWIFT_ENUM_TEMPLATE,
     SWIFT_FILE_TEMPALTE,
-} from "../template/swiftStructTemplate"
-import { VariableManager } from "../models/foundationModel"
+} from "../template/swiftStructTemplate.js"
+import { VariableManager } from "../models/foundationModel.js"
 
 export const readVariableJson = (filePath = "./sample.json") => {
     try {
